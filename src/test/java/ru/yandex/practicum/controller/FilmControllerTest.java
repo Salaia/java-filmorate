@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.exception.ValidationException;
 import ru.yandex.practicum.model.Film;
 
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.Month;
 
@@ -26,7 +25,7 @@ class FilmControllerTest {
         filmOriginal.setName("Harry Potter and the Philosopher's Stone");
         filmOriginal.setDescription("The Boy Who Lived");
         filmOriginal.setReleaseDate(LocalDate.of(2001, Month.NOVEMBER, 4));
-        filmOriginal.setDuration(Duration.ofMinutes(152));
+        filmOriginal.setDuration(152);
 
         assertFalse(controller.findAll().contains(filmOriginal));
         controller.create(filmOriginal);
@@ -43,7 +42,7 @@ class FilmControllerTest {
                 "Harry Potter and the Philosopher's Stone Harry Potter and the Philosopher's Stone " +
                 "Harry Potter and the Philosopher's Stone");
         filmOriginal.setReleaseDate(LocalDate.of(2001, Month.NOVEMBER, 4));
-        filmOriginal.setDuration(Duration.ofMinutes(152));
+        filmOriginal.setDuration(152);
 
         boolean hasException = false;
         try {
@@ -63,7 +62,7 @@ class FilmControllerTest {
         filmOriginal.setName("   ");
         filmOriginal.setDescription("The Boy Who Lived");
         filmOriginal.setReleaseDate(LocalDate.of(2001, Month.NOVEMBER, 4));
-        filmOriginal.setDuration(Duration.ofMinutes(152));
+        filmOriginal.setDuration(152);
 
         boolean hasException = false;
         try {
@@ -82,7 +81,7 @@ class FilmControllerTest {
         filmOriginal.setName("Harry Potter and the Philosopher's Stone");
         filmOriginal.setDescription("The Boy Who Lived");
         filmOriginal.setReleaseDate(LocalDate.of(1001, Month.NOVEMBER, 4));
-        filmOriginal.setDuration(Duration.ofMinutes(152));
+        filmOriginal.setDuration(152);
 
         boolean hasException = false;
         try {
@@ -102,7 +101,7 @@ class FilmControllerTest {
         filmOriginal.setName("Harry Potter and the Philosopher's Stone");
         filmOriginal.setDescription("The Boy Who Lived");
         filmOriginal.setReleaseDate(LocalDate.of(2001, Month.NOVEMBER, 4));
-        filmOriginal.setDuration(Duration.ofMinutes(-152));
+        filmOriginal.setDuration(-152);
 
         boolean hasException = false;
         try {
@@ -121,7 +120,7 @@ class FilmControllerTest {
         filmOriginal.setName("Harry Potter and the Philosopher's Stone");
         filmOriginal.setDescription("The Boy Who Lived");
         filmOriginal.setReleaseDate(LocalDate.of(2001, Month.NOVEMBER, 4));
-        filmOriginal.setDuration(Duration.ofMinutes(152));
+        filmOriginal.setDuration(152);
 
         assertFalse(controller.findAll().contains(filmOriginal));
         controller.create(filmOriginal);
@@ -135,15 +134,17 @@ class FilmControllerTest {
         Film filmOriginal = new Film();
         filmOriginal.setId(1L);
         filmOriginal.setName("Harry Potter and the Philosopher's Stone");
-        filmOriginal.setDescription("The Boy Who Lived Harry Potter and the Philosopher's Stone " +
-                "Harry Potter and the Philosopher's Stone Harry Potter and the Philosopher's Stone " +
-                "Harry Potter and the Philosopher's Stone Harry Potter and the Philosopher's Stone " +
-                "Harry Potter and the Philosopher's Stone");
+        filmOriginal.setDescription("The Boy Who Lived");
         filmOriginal.setReleaseDate(LocalDate.of(2001, Month.NOVEMBER, 4));
-        filmOriginal.setDuration(Duration.ofMinutes(152));
+        filmOriginal.setDuration(152);
 
         boolean hasException = false;
         try {
+            controller.create(filmOriginal);
+            filmOriginal.setDescription("The Boy Who Lived Harry Potter and the Philosopher's Stone " +
+                    "Harry Potter and the Philosopher's Stone Harry Potter and the Philosopher's Stone " +
+                    "Harry Potter and the Philosopher's Stone Harry Potter and the Philosopher's Stone " +
+                    "Harry Potter and the Philosopher's Stone");
             controller.update(filmOriginal);
         } catch (ValidationException e) {
             assertEquals(e.getMessage(), "Максимальная длина описания — 200 символов. " +
@@ -157,13 +158,15 @@ class FilmControllerTest {
     void blankNameFailUpdate() {
         Film filmOriginal = new Film();
         filmOriginal.setId(1L);
-        filmOriginal.setName("   ");
+        filmOriginal.setName("Potter");
         filmOriginal.setDescription("The Boy Who Lived");
         filmOriginal.setReleaseDate(LocalDate.of(2001, Month.NOVEMBER, 4));
-        filmOriginal.setDuration(Duration.ofMinutes(152));
+        filmOriginal.setDuration(152);
 
         boolean hasException = false;
         try {
+            controller.create(filmOriginal);
+            filmOriginal.setName("   ");
             controller.update(filmOriginal);
         } catch (ValidationException e) {
             assertEquals(e.getMessage(), "Название фильма не может быть пустым!");
@@ -179,10 +182,11 @@ class FilmControllerTest {
         filmOriginal.setName("Harry Potter and the Philosopher's Stone");
         filmOriginal.setDescription("The Boy Who Lived");
         filmOriginal.setReleaseDate(LocalDate.of(1001, Month.NOVEMBER, 4));
-        filmOriginal.setDuration(Duration.ofMinutes(152));
+        filmOriginal.setDuration(152);
 
         boolean hasException = false;
         try {
+            controller.create(filmOriginal);
             controller.update(filmOriginal);
         } catch (ValidationException e) {
             assertEquals(e.getMessage(), "Дата релиза — не раньше 28 декабря 1895 года. " +
@@ -199,10 +203,12 @@ class FilmControllerTest {
         filmOriginal.setName("Harry Potter and the Philosopher's Stone");
         filmOriginal.setDescription("The Boy Who Lived");
         filmOriginal.setReleaseDate(LocalDate.of(2001, Month.NOVEMBER, 4));
-        filmOriginal.setDuration(Duration.ofMinutes(-152));
+        filmOriginal.setDuration(152);
 
         boolean hasException = false;
         try {
+            controller.create(filmOriginal);
+            filmOriginal.setDuration(-152);
             controller.update(filmOriginal);
         } catch (ValidationException e) {
             assertEquals(e.getMessage(), "Продолжительность фильма должна быть положительной.");

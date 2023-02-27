@@ -7,18 +7,21 @@ import ru.yandex.practicum.model.User;
 
 import javax.validation.Valid;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @RestController
 @Slf4j
 @RequestMapping("/users")
 public class UserController {
-    private final Set<User> users = new HashSet<>();
+    private final Map<Long, User> users = new HashMap<>();
+    private Long lastGeneratedId = 0L;
 
     @PostMapping
     public User create(@Valid @RequestBody User user) {
-        if (!user.getEmail().contains("@") || user.getEmail().isBlank() || user.getEmail() == null) {
+        if (users.containsKey(user.getId())) {
+            log.debug("Такой пользователь уже существует.");
+            throw new ValidationException("Такой пользователь уже существует.");
+        } else if (!user.getEmail().contains("@") || user.getEmail().isBlank() || user.getEmail() == null) {
             log.debug("Электронная почта не может быть пустой и должна содержать символ @");
             throw new ValidationException("Электронная почта не может быть пустой и должна содержать символ @");
         } else if (user.getLogin().isEmpty() || user.getLogin() == null || user.getLogin().contains(" ")) {
@@ -29,11 +32,13 @@ public class UserController {
             throw new ValidationException("Дата рождения не может быть в будущем");
         } else if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
-            users.add(user);
+            user.setId(generateId());
+            users.put(user.getId(), user);
             log.info("Сохранен пользователь под login: " + user.getLogin());
             return user;
         } else {
-            users.add(user);
+            user.setId(generateId());
+            users.put(user.getId(), user);
             log.info("Сохранен пользователь под login: " + user.getLogin());
             return user;
         }
@@ -41,7 +46,10 @@ public class UserController {
 
     @PutMapping
     public User update(@Valid @RequestBody User user) {
-        if (!user.getEmail().contains("@") || user.getEmail().isBlank() || user.getEmail() == null) {
+        if (!users.containsKey(user.getId())) {
+            log.debug("Такого пользователя нет в базе.");
+            throw new ValidationException("Такого пользователя нет в базе.");
+        } else if (!user.getEmail().contains("@") || user.getEmail().isBlank() || user.getEmail() == null) {
             log.debug("Электронная почта не может быть пустой и должна содержать символ @");
             throw new ValidationException("Электронная почта не может быть пустой и должна содержать символ @");
         } else if (user.getLogin().isEmpty() || user.getLogin() == null || user.getLogin().contains(" ")) {
@@ -52,19 +60,22 @@ public class UserController {
             throw new ValidationException("Дата рождения не может быть в будущем");
         } else if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
-            users.add(user);
+            users.replace(user.getId(), user);
             log.info("Сохранен пользователь под login: " + user.getLogin());
             return user;
         } else {
-            users.add(user);
+            users.replace(user.getId(), user);
             log.info("Сохранен пользователь под login: " + user.getLogin());
             return user;
         }
     }
 
     @GetMapping
-    public Set<User> findAll() {
-        return users;
+    public List<User> findAll() {
+        return new ArrayList<>(users.values());
     }
 
+    private Long generateId() {
+        return ++lastGeneratedId;
+    }
 }

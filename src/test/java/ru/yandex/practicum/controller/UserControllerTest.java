@@ -116,49 +116,44 @@ class UserControllerTest {
         user.setLogin("Salaia");
         user.setEmail("puma.hope@yandex.ru");
         user.setBirthday(LocalDate.of(1988, Month.JANUARY, 5));
-
-        User user2 = new User();
-        user2.setId(1L);
-        user2.setName("Salaia");
-        user2.setLogin("Salaia");
-        user2.setEmail("puma.hope@yandex.ru");
-        user2.setBirthday(LocalDate.of(1988, Month.JANUARY, 5));
-
-
-        assertFalse(controller.findAll().contains(user));
-        assertEquals(0, controller.findAll().size());
         controller.create(user);
-        assertTrue(controller.findAll().contains(user));
-        assertEquals(1, controller.findAll().size());
-        controller.create(user2);
-        assertEquals(1, controller.findAll().size());
+
+        assertEquals(controller.findAll().get(Math.toIntExact(user.getId()) - 1).getName(),
+                controller.findAll().get(Math.toIntExact(user.getId()) - 1).getLogin());
     }
 
     @Test
     void updateUserSuccess() {
         User user = new User();
-        user.setId(1L);
         user.setName("HopeHeavens");
         user.setLogin("Salaia");
         user.setEmail("puma.hope@yandex.ru");
         user.setBirthday(LocalDate.of(1988, Month.JANUARY, 5));
+        controller.create(user);
 
-        assertFalse(controller.findAll().contains(user));
-        controller.update(user);
-        assertTrue(controller.findAll().contains(user));
+        User user2 = new User();
+        user2.setName("HopeHeavens");
+        user2.setId(user.getId());
+        user2.setLogin("Lessera");
+        user2.setEmail("puma.hope@yandex.ru");
+        user2.setBirthday(LocalDate.of(1988, Month.JANUARY, 5));
+        controller.update(user2);
+
+        assertEquals("Lessera", controller.findAll().get(Math.toIntExact(user.getId()) - 1).getLogin());
     }
 
     @Test
     void blankEmailFailUpdate() {
         User user = new User();
-        user.setId(1L);
         user.setName("HopeHeavens");
         user.setLogin("Salaia");
-        user.setEmail("  ");
+        user.setEmail("me@mail.com");
         user.setBirthday(LocalDate.of(1988, Month.JANUARY, 5));
+        controller.create(user);
 
         boolean hasException = false;
         try {
+            user.setEmail(" ");
             controller.update(user);
         } catch (ValidationException e) {
             assertEquals(e.getMessage(), "Электронная почта не может быть пустой и должна содержать символ @");
@@ -173,11 +168,13 @@ class UserControllerTest {
         user.setId(1L);
         user.setName("HopeHeavens");
         user.setLogin("Salaia");
-        user.setEmail("memail");
+        user.setEmail("memail@mail.ru");
         user.setBirthday(LocalDate.of(1988, Month.JANUARY, 5));
+        controller.create(user);
 
         boolean hasException = false;
         try {
+            user.setEmail("meow");
             controller.update(user);
         } catch (ValidationException e) {
             assertEquals(e.getMessage(), "Электронная почта не может быть пустой и должна содержать символ @");
@@ -191,12 +188,14 @@ class UserControllerTest {
         User user = new User();
         user.setId(1L);
         user.setName("HopeHeavens");
-        user.setLogin(" S a l a i a ");
+        user.setLogin("Salaia");
         user.setEmail("puma.hope@yandex.ru");
         user.setBirthday(LocalDate.of(1988, Month.JANUARY, 5));
+        controller.create(user);
 
         boolean hasException = false;
         try {
+            user.setLogin(" S a l a i a ");
             controller.update(user);
         } catch (ValidationException e) {
             assertEquals(e.getMessage(), "Логин не может быть пустым и содержать пробелы");
@@ -212,10 +211,12 @@ class UserControllerTest {
         user.setName("HopeHeavens");
         user.setLogin("Salaia");
         user.setEmail("puma.hope@yandex.ru");
-        user.setBirthday(LocalDate.of(3988, Month.JANUARY, 5));
+        user.setBirthday(LocalDate.of(1988, Month.JANUARY, 5));
+        controller.create(user);
 
         boolean hasException = false;
         try {
+            user.setBirthday(LocalDate.of(2988, Month.JANUARY, 5));
             controller.update(user);
         } catch (ValidationException e) {
             assertEquals(e.getMessage(), "Дата рождения не может быть в будущем");
@@ -227,26 +228,22 @@ class UserControllerTest {
     @Test
     void blankNameUpdateSuccess() {
         User user = new User();
-        user.setId(1L);
-        user.setName(" ");
+        user.setName("Hope Heavens");
         user.setLogin("Salaia");
         user.setEmail("puma.hope@yandex.ru");
         user.setBirthday(LocalDate.of(1988, Month.JANUARY, 5));
+        controller.create(user);
 
         User user2 = new User();
-        user2.setId(1L);
-        user2.setName("Salaia");
+        user2.setName(" ");
+        user2.setId(user.getId());
         user2.setLogin("Salaia");
         user2.setEmail("puma.hope@yandex.ru");
         user2.setBirthday(LocalDate.of(1988, Month.JANUARY, 5));
-
-
-        assertFalse(controller.findAll().contains(user));
-        assertEquals(0, controller.findAll().size());
-        controller.update(user);
-        assertTrue(controller.findAll().contains(user));
-        assertEquals(1, controller.findAll().size());
         controller.update(user2);
-        assertEquals(1, controller.findAll().size());
+
+        assertEquals(controller.findAll().get(Math.toIntExact(user.getId()) - 1).getName(),
+                controller.findAll().get(Math.toIntExact(user.getId()) - 1).getLogin());
+
     }
 }
