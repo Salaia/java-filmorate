@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.exception.ValidationException;
 import ru.yandex.practicum.model.User;
+import ru.yandex.practicum.service.UserService;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -12,10 +13,12 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class UserControllerTest {
     static UserController controller;
+    static UserService service;
 
     @BeforeEach
     void init() {
-        controller = new UserController();
+        service = new UserService();
+        controller = new UserController(service);
     }
 
     @Test
@@ -45,7 +48,7 @@ class UserControllerTest {
         try {
             controller.create(user);
         } catch (ValidationException e) {
-            assertEquals(e.getMessage(), "Электронная почта не может быть пустой и должна содержать символ @");
+            assertEquals(e.getMessage(), "Email may not be empty and has to contain '@' symbol!");
             hasException = true;
         }
         assertTrue(hasException);
@@ -64,7 +67,7 @@ class UserControllerTest {
         try {
             controller.create(user);
         } catch (ValidationException e) {
-            assertEquals(e.getMessage(), "Электронная почта не может быть пустой и должна содержать символ @");
+            assertEquals(e.getMessage(), "Email may not be empty and has to contain '@' symbol!");
             hasException = true;
         }
         assertTrue(hasException);
@@ -83,7 +86,7 @@ class UserControllerTest {
         try {
             controller.create(user);
         } catch (ValidationException e) {
-            assertEquals(e.getMessage(), "Логин не может быть пустым и содержать пробелы");
+            assertEquals(e.getMessage(), "Login may not be empty or contain any space-symbols!");
             hasException = true;
         }
         assertTrue(hasException);
@@ -102,7 +105,7 @@ class UserControllerTest {
         try {
             controller.create(user);
         } catch (ValidationException e) {
-            assertEquals(e.getMessage(), "Дата рождения не может быть в будущем");
+            assertEquals(e.getMessage(), "Date of birth may not be in future!");
             hasException = true;
         }
         assertTrue(hasException);
@@ -156,7 +159,7 @@ class UserControllerTest {
             user.setEmail(" ");
             controller.update(user);
         } catch (ValidationException e) {
-            assertEquals(e.getMessage(), "Электронная почта не может быть пустой и должна содержать символ @");
+            assertEquals(e.getMessage(), "Email may not be empty and has to contain '@' symbol!");
             hasException = true;
         }
         assertTrue(hasException);
@@ -177,7 +180,7 @@ class UserControllerTest {
             user.setEmail("meow");
             controller.update(user);
         } catch (ValidationException e) {
-            assertEquals(e.getMessage(), "Электронная почта не может быть пустой и должна содержать символ @");
+            assertEquals(e.getMessage(), "Email may not be empty and has to contain '@' symbol!");
             hasException = true;
         }
         assertTrue(hasException);
@@ -198,7 +201,7 @@ class UserControllerTest {
             user.setLogin(" S a l a i a ");
             controller.update(user);
         } catch (ValidationException e) {
-            assertEquals(e.getMessage(), "Логин не может быть пустым и содержать пробелы");
+            assertEquals(e.getMessage(), "Login may not be empty or contain any space-symbols!");
             hasException = true;
         }
         assertTrue(hasException);
@@ -219,7 +222,7 @@ class UserControllerTest {
             user.setBirthday(LocalDate.of(2988, Month.JANUARY, 5));
             controller.update(user);
         } catch (ValidationException e) {
-            assertEquals(e.getMessage(), "Дата рождения не может быть в будущем");
+            assertEquals(e.getMessage(), "Date of birth may not be in future!");
             hasException = true;
         }
         assertTrue(hasException);

@@ -1,17 +1,20 @@
 package ru.yandex.practicum.model;
 
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
 
 @Data
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class User {
 
-    private Long id;
-    private String email;
-    private String login;
-    private String name; // имя для отображения
-    private LocalDate birthday;
+    Long id;
+    String email;
+    String login;
+    String name; // имя для отображения
+    LocalDate birthday;
 
 
 }
