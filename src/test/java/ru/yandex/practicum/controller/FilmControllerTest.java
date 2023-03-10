@@ -7,6 +7,8 @@ import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.exception.ValidationException;
 import ru.yandex.practicum.model.Film;
 import ru.yandex.practicum.service.FilmService;
+import ru.yandex.practicum.storage.film.FilmStorage;
+import ru.yandex.practicum.storage.film.InMemoryFilmStorage;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -17,11 +19,13 @@ import static org.junit.jupiter.api.Assertions.*;
 class FilmControllerTest {
     static FilmController controller;
     static FilmService service;
+    static FilmStorage storage;
 
     @BeforeEach
     void init() {
-        service = new FilmService();
-        controller = new FilmController(service);
+        storage = new InMemoryFilmStorage();
+        service = new FilmService(storage);
+        controller = new FilmController(service, storage);
     }
 
     @Test
@@ -211,5 +215,19 @@ class FilmControllerTest {
             hasException = true;
         }
         assertTrue(hasException);
+    }
+
+    @Test
+    void getFilmByIdSuccess() {
+        Film filmOriginal = new Film();
+        filmOriginal.setName("Harry Potter and the Philosopher's Stone");
+        filmOriginal.setDescription("The Boy Who Lived");
+        filmOriginal.setReleaseDate(LocalDate.of(2001, Month.NOVEMBER, 4));
+        filmOriginal.setDuration(152);
+        controller.create(filmOriginal);
+
+        Long id = filmOriginal.getId();
+        Film filmRestored = controller.findFilmById(id);
+        assertEquals(filmOriginal, filmRestored);
     }
 }

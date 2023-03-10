@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.exception.ValidationException;
 import ru.yandex.practicum.model.User;
 import ru.yandex.practicum.service.UserService;
+import ru.yandex.practicum.storage.user.InMemoryUserStorage;
+import ru.yandex.practicum.storage.user.UserStorage;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -14,17 +16,18 @@ import static org.junit.jupiter.api.Assertions.*;
 class UserControllerTest {
     static UserController controller;
     static UserService service;
+    static UserStorage storage;
 
     @BeforeEach
     void init() {
-        service = new UserService();
-        controller = new UserController(service);
+        storage = new InMemoryUserStorage();
+        service = new UserService(storage);
+        controller = new UserController(service, storage);
     }
 
     @Test
     void createUserSuccess() {
         User user = new User();
-        user.setId(1L);
         user.setName("HopeHeavens");
         user.setLogin("Salaia");
         user.setEmail("puma.hope@yandex.ru");
@@ -38,7 +41,6 @@ class UserControllerTest {
     @Test
     void blankEmailFailCreate() {
         User user = new User();
-        user.setId(1L);
         user.setName("HopeHeavens");
         user.setLogin("Salaia");
         user.setEmail("  ");
@@ -57,7 +59,6 @@ class UserControllerTest {
     @Test
     void noDogEmailFailCreate() {
         User user = new User();
-        user.setId(1L);
         user.setName("HopeHeavens");
         user.setLogin("Salaia");
         user.setEmail("memail");
@@ -76,7 +77,6 @@ class UserControllerTest {
     @Test
     void spacesLoginFailCreate() {
         User user = new User();
-        user.setId(1L);
         user.setName("HopeHeavens");
         user.setLogin(" S a l a i a ");
         user.setEmail("puma.hope@yandex.ru");
@@ -95,7 +95,6 @@ class UserControllerTest {
     @Test
     void wasBornInFutureFailCreate() { // was born in future - написала и аж захотела фантастический рассказ под таким названием написать )))
         User user = new User();
-        user.setId(1L);
         user.setName("HopeHeavens");
         user.setLogin("Salaia");
         user.setEmail("puma.hope@yandex.ru");
@@ -114,7 +113,6 @@ class UserControllerTest {
     @Test
     void blankNameCreateSuccess() {
         User user = new User();
-        user.setId(1L);
         user.setName(" ");
         user.setLogin("Salaia");
         user.setEmail("puma.hope@yandex.ru");
@@ -168,7 +166,6 @@ class UserControllerTest {
     @Test
     void noDogEmailFailUpdate() {
         User user = new User();
-        user.setId(1L);
         user.setName("HopeHeavens");
         user.setLogin("Salaia");
         user.setEmail("memail@mail.ru");
@@ -189,7 +186,6 @@ class UserControllerTest {
     @Test
     void spacesLoginFailUpdate() {
         User user = new User();
-        user.setId(1L);
         user.setName("HopeHeavens");
         user.setLogin("Salaia");
         user.setEmail("puma.hope@yandex.ru");
@@ -210,7 +206,6 @@ class UserControllerTest {
     @Test
     void wasBornInFutureFailUpdate() { // was born in future - написала и аж захотела фантастический рассказ под таким названием написать )))
         User user = new User();
-        user.setId(1L);
         user.setName("HopeHeavens");
         user.setLogin("Salaia");
         user.setEmail("puma.hope@yandex.ru");
@@ -249,4 +244,20 @@ class UserControllerTest {
                 controller.findAll().get(Math.toIntExact(user.getId()) - 1).getLogin());
 
     }
+
+    @Test
+    void getUserByIdSuccess(){
+        User user = new User();
+        user.setName("HopeHeavens");
+        user.setLogin("Salaia");
+        user.setEmail("puma.hope@yandex.ru");
+        user.setBirthday(LocalDate.of(1988, Month.JANUARY, 5));
+        controller.create(user);
+
+        Long id = user.getId();
+        User userRestored = controller.findUserById(id);
+        assertEquals(user, userRestored);
+    }
+
+    // TODO тестирование негативных
 }

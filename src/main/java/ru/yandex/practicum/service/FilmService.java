@@ -4,86 +4,64 @@ import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.exception.ValidationException;
+import ru.yandex.practicum.exception.NotFoundException;
 import ru.yandex.practicum.model.Film;
+import ru.yandex.practicum.storage.film.FilmStorage;
 
-import javax.validation.Valid;
-import java.time.LocalDate;
-import java.time.Month;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class FilmService {
+    final FilmStorage filmStorage;
 
-    final Map<Long, Film> films = new HashMap<>();
-    Long lastGeneratedId = 0L;
+    public FilmService(FilmStorage filmStorage) {
+        this.filmStorage = filmStorage;
+    }
 
-    public Film create(@RequestBody @Valid Film film) {
-        if (film.getName().isBlank() || film.getName() == null) {
-            String message = "Film name may not be empty!";
+    public Film addLike(Long filmId, Long userId) {
+        if (userId <= 0) {
+            String message = "Incorrect user id.";
             log.debug(message);
-            throw new ValidationException(message);
-        } else if (film.getDescription().length() > 200) {
-            String message = "Film description max length is 200 symbols. Current input is: " + film.getDescription().length() + " symbols.";
-            log.debug(message);
-            throw new ValidationException(message);
-        } else if (film.getReleaseDate().isBefore(LocalDate.of(1895, Month.DECEMBER, 28))) {
-            String message = "Release date may not be before 1895, December, 28th. Current input is: " + film.getReleaseDate();
-            log.debug(message);
-            throw new ValidationException(message);
-        } else if (film.getDuration() <= 0) {
-            String message = "Film duration has to be positive.";
-            log.debug(message);
-            throw new ValidationException(message);
-        } else {
-            film.setId(generateId());
-            films.put(film.getId(), film);
-            log.info("Film " + film.getName() + " was successfully saved!");
-            return film;
+            throw new NotFoundException(message);
         }
-    }
-
-    public Film update(@RequestBody @Valid Film film) {
-        if (!films.containsKey(film.getId())) {
-            String message = "There's no such film in our DataBase! Please use Create function!";
+        if (filmId <= 0) {
+            String message = "Incorrect film id.";
             log.debug(message);
-            throw new ValidationException(message);
+            throw new NotFoundException(message);
         }
-        if (film.getName().isBlank() || film.getName() == null) {
-            String message = "Film name may not be empty!";
+        filmStorage.findFilmById(filmId).getLikes().add(userId);
+        log.info("Like was added to film " + filmStorage.findFilmById(filmId).getName());
+        return filmStorage.findFilmById(filmId);
+    }
+
+    public Film removeLike(Long filmId, Long userId) {
+        if (userId <= 0) {
+            String message = "Incorrect user id.";
             log.debug(message);
-            throw new ValidationException(message);
-        } else if (film.getDescription().length() > 200) {
-            String message = "Film description max length is 200 symbols. Current input is: " + film.getDescription().length() + " symbols.";
-            log.debug(message);
-            throw new ValidationException(message);
-        } else if (film.getReleaseDate().isBefore(LocalDate.of(1985, Month.DECEMBER, 28))) {
-            String message = "Release date may not be before 1895, December, 28th. Current input is: " + film.getReleaseDate();
-            log.debug(message);
-            throw new ValidationException(message);
-        } else if (film.getDuration() <= 0) {
-            String message = "Film duration has to be positive.";
-            log.debug(message);
-            throw new ValidationException(message);
-        } else {
-            films.replace(film.getId(), film);
-            log.info("Film " + film.getName() + " was successfully saved!");
-            return film;
+            throw new NotFoundException(message);
         }
+        if (filmId <= 0) {
+            String message = "Incorrect film id.";
+            log.debug(message);
+            throw new NotFoundException(message);
+        }
+        filmStorage.findFilmById(filmId).getLikes().remove(userId);
+        log.info("Like was removed from film " + filmStorage.findFilmById(filmId).getName());
+        return filmStorage.findFilmById(filmId);
     }
 
-    public List<Film> findAll() {
-        return new ArrayList<>(films.values());
+    public List<Film> findPopularFilms(Integer count) {
+        if (filmStorage.findAll().isEmpty()) {
+            String message = "No films in our DataBase yet.";
+            log.debug(message);
+            throw new NotFoundException(message);
+        }
+        return filmStorage.findAll().stream()
+                .sorted((film1, film2) -> film2.getLikes().size() - film1.getLikes().size())
+                .limit(count)
+                .collect(Collectors.toList());
     }
-
-    private Long generateId() {
-        return ++lastGeneratedId;
-    }
-
 }
