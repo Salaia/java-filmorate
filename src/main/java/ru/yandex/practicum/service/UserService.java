@@ -4,89 +4,94 @@ import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.exception.ValidationException;
+import ru.yandex.practicum.exception.NotFoundException;
 import ru.yandex.practicum.model.User;
+import ru.yandex.practicum.storage.user.UserStorage;
 
-import javax.validation.Valid;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserService {
-    final Map<Long, User> users = new HashMap<>();
-    Long lastGeneratedId = 0L;
+    final UserStorage userStorage;
 
-    public User create(@RequestBody @Valid User user) {
-        if (users.containsKey(user.getId())) {
-            String message = "User already exists in our DataBase. Please use Update function.";
+    public UserService(UserStorage userStorage) {
+        this.userStorage = userStorage;
+    }
+
+    /*
+    Пока пользователям не надо одобрять заявки в друзья — добавляем сразу.
+    То есть если Лена стала другом Саши, то это значит, что Саша теперь друг Лены.
+     */
+    public User addFriend(Long userId, Long friendId) {
+        if (userId <= 0) {
+            String message = "Incorrect user id.";
             log.debug(message);
-            throw new ValidationException(message);
-        } else if (!user.getEmail().contains("@") || user.getEmail().isBlank() || user.getEmail() == null) {
-            String message = "Email may not be empty and has to contain '@' symbol!";
-            log.debug(message);
-            throw new ValidationException(message);
-        } else if (user.getLogin().isEmpty() || user.getLogin() == null || user.getLogin().contains(" ")) {
-            String message = "Login may not be empty or contain any space-symbols!";
-            log.debug(message);
-            throw new ValidationException(message);
-        } else if (user.getBirthday().isAfter(LocalDate.now())) {
-            String message = "Date of birth may not be in future!";
-            log.debug(message);
-            throw new ValidationException(message);
-        } else if (user.getName() == null || user.getName().isBlank()) {
-            user.setName(user.getLogin());
-            user.setId(generateId());
-            users.put(user.getId(), user);
-            log.info("User was successfully saved under login: " + user.getLogin());
-            return user;
-        } else {
-            user.setId(generateId());
-            users.put(user.getId(), user);
-            log.info("User was successfully saved under login: " + user.getLogin());
-            return user;
+            throw new NotFoundException(message);
         }
-    }
-
-    public User update(@RequestBody @Valid User user) {
-        if (!users.containsKey(user.getId())) {
-            String message = "There's no such user in our DataBase!";
+        if (friendId <= 0) {
+            String message = "Incorrect friend's id.";
             log.debug(message);
-            throw new ValidationException(message);
-        } else if (!user.getEmail().contains("@") || user.getEmail().isBlank() || user.getEmail() == null) {
-            String message = "Email may not be empty and has to contain '@' symbol!";
-            log.debug(message);
-            throw new ValidationException(message);
-        } else if (user.getLogin().isEmpty() || user.getLogin() == null || user.getLogin().contains(" ")) {
-            String message = "Login may not be empty or contain any space-symbols!";
-            log.debug(message);
-            throw new ValidationException(message);
-        } else if (user.getBirthday().isAfter(LocalDate.now())) {
-            String message = "Date of birth may not be in future!";
-            log.debug(message);
-            throw new ValidationException(message);
-        } else if (user.getName() == null || user.getName().isBlank()) {
-            user.setName(user.getLogin());
-            users.replace(user.getId(), user);
-            log.info("User was successfully saved under login: " + user.getLogin());
-            return user;
-        } else {
-            users.replace(user.getId(), user);
-            log.info("User was successfully saved under login: " + user.getLogin());
-            return user;
+            throw new NotFoundException(message);
         }
+        userStorage.findUserById(userId).getFriendsIds().add(friendId);
+        userStorage.findUserById(friendId).getFriendsIds().add(userId);
+        log.info("Users " + userStorage.findUserById(userId).getName() +
+                " and " + userStorage.findUserById(friendId).getName() +
+                " are friends now!");
+        return userStorage.findUserById(friendId);
     }
 
-    public List<User> findAll() {
-        return new ArrayList<>(users.values());
+    public User removeFriend(Long userId, Long friendId) {
+        if (userId <= 0) {
+            String message = "Incorrect user id";
+            log.debug(message);
+            throw new NotFoundException(message);
+        }
+        if (friendId <= 0) {
+            String message = "Incorrect friend's id";
+            log.debug(message);
+            throw new NotFoundException(message);
+        }
+        userStorage.findUserById(userId).getFriendsIds().remove(friendId);
+        userStorage.findUserById(friendId).getFriendsIds().remove(userId);
+        log.info("Users " + userStorage.findUserById(userId).getName() +
+                " and " + userStorage.findUserById(friendId).getName() +
+                " are not friends anymore!");
+        return userStorage.findUserById(friendId);
     }
 
-    private Long generateId() {
-        return ++lastGeneratedId;
+    public List<User> findFriends(Long userId) {
+        if (userId <= 0) {
+            String message = "Incorrect user id";
+            log.debug(message);
+            throw new NotFoundException(message);
+        }
+        List<User> result = new ArrayList<>();
+        for (Long friendId : userStorage.findUserById(userId).getFriendsIds()) {
+            result.add(userStorage.findUserById(friendId));
+        }
+        return result;
+    }
+
+    public List<User> findCommonFriends(Long userId, Long otherUserId) {
+        if (userId <= 0) {
+            String message = "Incorrect user id";
+            log.debug(message);
+            throw new NotFoundException(message);
+        }
+        if (otherUserId <= 0) {
+            String message = "Incorrect other user's id";
+            log.debug(message);
+            throw new NotFoundException(message);
+        }
+        List<User> result = new ArrayList<>();
+        for (Long friendId : userStorage.findUserById(userId).getFriendsIds()) {
+            if (userStorage.findUserById(otherUserId).getFriendsIds().contains(friendId)) {
+                result.add(userStorage.findUserById(friendId));
+            }
+        }
+        return result;
     }
 }
