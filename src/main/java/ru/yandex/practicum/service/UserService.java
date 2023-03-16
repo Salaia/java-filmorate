@@ -11,6 +11,7 @@ import ru.yandex.practicum.storage.user.UserStorage;
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Primary
@@ -49,11 +50,15 @@ public class UserService {
     }
 
     public List<User> findFriends(@Positive Long userId) {
-        List<User> result = new ArrayList<>();
+        userStorage.findUserById(userId);
+        return userStorage.findAll().stream()
+                .filter(user -> user.getFriendsIds().contains(userId))
+                .collect(Collectors.toList());
+        /*List<User> result = new ArrayList<>();
         for (Long friendId : userStorage.findUserById(userId).getFriendsIds()) {
             result.add(userStorage.findUserById(friendId));
         }
-        return result;
+        return result;*/
     }
 
     public List<User> findCommonFriends(@Positive Long userId, @Positive Long otherUserId) {
