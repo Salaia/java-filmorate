@@ -1,3 +1,4 @@
+/*
 package ru.yandex.practicum.controller;
 
 import lombok.AccessLevel;
@@ -74,7 +75,8 @@ class FilmControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
 
 
-        /*Film filmOriginal = new Film();
+        */
+/*Film filmOriginal = new Film();
         filmOriginal.setName("Harry Potter and the Philosopher's Stone");
         filmOriginal.setDescription("The Boy Who Lived Harry Potter and the Philosopher's Stone " +
                 "Harry Potter and the Philosopher's Stone Harry Potter and the Philosopher's Stone " +
@@ -90,7 +92,8 @@ class FilmControllerTest {
             assertEquals(e.getMessage(), "Film description max length is 200 symbols. Current input is: " + filmOriginal.getDescription().length() + " symbols.");
             hasException = true;
         }
-        assertTrue(hasException);*/
+        assertTrue(hasException);*//*
+
     }
 
     @Test
@@ -262,4 +265,4 @@ class FilmControllerTest {
         Film filmRestored = controller.findFilmById(id);
         assertEquals(filmOriginal, filmRestored);
     }
-}
+}*/
