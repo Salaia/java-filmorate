@@ -4,28 +4,47 @@ import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import ru.yandex.practicum.exception.ValidationException;
 import ru.yandex.practicum.model.Film;
 import ru.yandex.practicum.service.FilmService;
 import ru.yandex.practicum.storage.film.FilmStorage;
 import ru.yandex.practicum.storage.film.InMemoryFilmStorage;
+import ru.yandex.practicum.storage.user.InMemoryUserStorage;
+import ru.yandex.practicum.storage.user.UserStorage;
 
+import javax.validation.ConstraintViolationException;
 import java.time.LocalDate;
 import java.time.Month;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+//@SpringBootTest
+@WebMvcTest(controllers = FilmController.class)
 @FieldDefaults(level = AccessLevel.PRIVATE)
 class FilmControllerTest {
-    static FilmController controller;
-    static FilmService service;
-    static FilmStorage storage;
+    @Autowired
+    MockMvc mockMvc;
+    @Autowired
+     static FilmController controller;
+    @Autowired
+     static FilmService service;
+    @Autowired static FilmStorage filmStorage;
+    @Autowired static UserStorage userStorage;
 
     @BeforeEach
     void init() {
-        storage = new InMemoryFilmStorage();
-        service = new FilmService(storage);
-        controller = new FilmController(service, storage);
+        filmStorage = new InMemoryFilmStorage();
+        userStorage = new InMemoryUserStorage();
+        service = new FilmService(filmStorage, userStorage);
+        controller = new FilmController(service);
     }
 
     @Test
@@ -42,8 +61,20 @@ class FilmControllerTest {
     }
 
     @Test
-    void descriptionTooLongFailCreate() {
-        Film filmOriginal = new Film();
+    void descriptionTooLongFailCreate() throws Exception {
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/films")
+                        .content("{\"name\":\"Harry Potter and the Philosopher's Stone\"," +
+                                "\"description\":\"The Boy Who Lived Harry Potter and the Philosopher's Stone \" +\n" +
+                                "                \"Harry Potter and the Philosopher's Stone Harry Potter and the Philosopher's Stone \" +\n" +
+                                "                \"Harry Potter and the Philosopher's Stone Harry Potter and the Philosopher's Stone \" +\n" +
+                                "                \"Harry Potter and the Philosopher's Stone\"," +
+                                "\"releaseDate\": \"2001-11-04\"," +
+                                "\"duration\": \"152\"}"))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+
+
+        /*Film filmOriginal = new Film();
         filmOriginal.setName("Harry Potter and the Philosopher's Stone");
         filmOriginal.setDescription("The Boy Who Lived Harry Potter and the Philosopher's Stone " +
                 "Harry Potter and the Philosopher's Stone Harry Potter and the Philosopher's Stone " +
@@ -59,7 +90,7 @@ class FilmControllerTest {
             assertEquals(e.getMessage(), "Film description max length is 200 symbols. Current input is: " + filmOriginal.getDescription().length() + " symbols.");
             hasException = true;
         }
-        assertTrue(hasException);
+        assertTrue(hasException);*/
     }
 
     @Test
@@ -106,11 +137,12 @@ class FilmControllerTest {
         filmOriginal.setDescription("The Boy Who Lived");
         filmOriginal.setReleaseDate(LocalDate.of(2001, Month.NOVEMBER, 4));
         filmOriginal.setDuration(-152);
-
+        // System.out.println(filmOriginal.toString());
         boolean hasException = false;
         try {
             controller.create(filmOriginal);
-        } catch (ValidationException e) {
+            System.out.println(filmOriginal);
+        } catch (Throwable e) {
             assertEquals(e.getMessage(), "Film duration has to be positive.");
             hasException = true;
         }
