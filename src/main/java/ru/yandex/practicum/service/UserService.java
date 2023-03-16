@@ -66,10 +66,11 @@ public class UserService {
         User otherUser = userStorage.findUserById(otherUserId);
         Set<Long> userFriends = user.getFriendsIds();
         Set<Long> otherUserFriends = otherUser.getFriendsIds();
-        userFriends.retainAll(otherUserFriends);
+        Set<Long> commonFriends = new HashSet<>(userFriends);
+        commonFriends.retainAll(otherUserFriends);
 
         List<User> result = new ArrayList<>();
-        for (Long friendId : userFriends) {
+        for (Long friendId : commonFriends) {
             result.add(userStorage.findUserById(friendId));
         }
         return result;
