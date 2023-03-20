@@ -3,18 +3,14 @@ package ru.yandex.practicum.service;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.model.User;
 import ru.yandex.practicum.storage.user.UserStorage;
 
-import javax.validation.Valid;
-import javax.validation.constraints.Positive;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-@Primary
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserService {
@@ -28,7 +24,7 @@ public class UserService {
     Пока пользователям не надо одобрять заявки в друзья — добавляем сразу.
     То есть если Лена стала другом Саши, то это значит, что Саша теперь друг Лены.
      */
-    public User addFriend(@Positive Long userId, @Positive Long friendId) {
+    public User addFriend(Long userId, Long friendId) {
         User user = userStorage.findUserById(userId);
         User friend = userStorage.findUserById(friendId);
 
@@ -40,7 +36,7 @@ public class UserService {
         return userStorage.findUserById(friendId);
     }
 
-    public User removeFriend(@Positive Long userId, @Positive Long friendId) {
+    public User removeFriend(Long userId, Long friendId) {
         userStorage.findUserById(userId).getFriendsIds().remove(friendId);
         userStorage.findUserById(friendId).getFriendsIds().remove(userId);
         log.info("Users " + userStorage.findUserById(userId).getName() +
@@ -49,19 +45,14 @@ public class UserService {
         return userStorage.findUserById(friendId);
     }
 
-    public List<User> findFriends(@Positive Long userId) {
+    public List<User> findFriends(Long userId) {
         userStorage.findUserById(userId);
         return userStorage.findAll().stream()
                 .filter(user -> user.getFriendsIds().contains(userId))
                 .collect(Collectors.toList());
-        /*List<User> result = new ArrayList<>();
-        for (Long friendId : userStorage.findUserById(userId).getFriendsIds()) {
-            result.add(userStorage.findUserById(friendId));
-        }
-        return result;*/
     }
 
-    public List<User> findCommonFriends(@Positive Long userId, @Positive Long otherUserId) {
+    public List<User> findCommonFriends(Long userId, Long otherUserId) {
         User user = userStorage.findUserById(userId);
         User otherUser = userStorage.findUserById(otherUserId);
         Set<Long> userFriends = user.getFriendsIds();
@@ -76,11 +67,20 @@ public class UserService {
         return result;
     }
 
-    public User create(@Valid User user) {
+    public User create(User user) {
+        if (user.getName() == null || user.getName().isBlank()) {
+            user.setName(user.getLogin());
+        }
+        log.info("User was successfully saved under login: " + user.getLogin());
         return userStorage.create(user);
     }
 
-    public User update(@Valid User user) {
+    public User update(User user) {
+        userStorage.findUserById(user.getId()); // NotFoundException
+        if (user.getName() == null || user.getName().isBlank()) {
+            user.setName(user.getLogin());
+        }
+        log.info("User was successfully updated under login: " + user.getLogin());
         return userStorage.update(user);
     }
 
@@ -88,7 +88,7 @@ public class UserService {
         return userStorage.findAll();
     }
 
-    public User findUserById(@Positive Long id) {
+    public User findUserById(Long id) {
         return userStorage.findUserById(id);
     }
 }

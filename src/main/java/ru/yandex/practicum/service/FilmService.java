@@ -4,7 +4,6 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.exception.NotFoundException;
 import ru.yandex.practicum.model.Film;
@@ -12,14 +11,10 @@ import ru.yandex.practicum.model.User;
 import ru.yandex.practicum.storage.film.FilmStorage;
 import ru.yandex.practicum.storage.user.UserStorage;
 
-import javax.validation.Valid;
-import javax.validation.constraints.Positive;
-import javax.validation.constraints.PositiveOrZero;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-@Primary
 @Slf4j
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -27,7 +22,7 @@ public class FilmService {
     FilmStorage filmStorage;
     UserStorage userStorage;
 
-    public Film addLike(@Positive Long filmId, @Positive Long userId) {
+    public Film addLike(Long filmId, Long userId) {
         User user = userStorage.findUserById(userId);
         Film film = filmStorage.findFilmById(filmId);
         film.getLikes().add(userId);
@@ -35,7 +30,7 @@ public class FilmService {
         return filmStorage.findFilmById(filmId);
     }
 
-    public Film removeLike(@Positive Long filmId, @Positive Long userId) {
+    public Film removeLike(Long filmId, Long userId) {
         User user = userStorage.findUserById(userId);
         Film film = filmStorage.findFilmById(filmId);
         film.getLikes().remove(userId);
@@ -43,7 +38,7 @@ public class FilmService {
         return filmStorage.findFilmById(filmId);
     }
 
-    public List<Film> findPopularFilms(@PositiveOrZero Integer count) {
+    public List<Film> findPopularFilms(Integer count) {
         List<Film> films = filmStorage.findAll();
         if (films.isEmpty()) {
             String message = "No films in our DataBase yet.";
@@ -56,11 +51,14 @@ public class FilmService {
                 .collect(Collectors.toList());
     }
 
-    public Film create(@Valid Film film) {
+    public Film create(Film film) {
+        log.info("Film " + film.getName() + " was successfully saved!");
         return filmStorage.create(film);
     }
 
-    public Film update(@Valid Film film) {
+    public Film update(Film film) {
+        filmStorage.findFilmById(film.getId()); // NotFoundException
+        log.info("Film " + film.getName() + " was successfully updated!");
         return filmStorage.update(film);
     }
 
@@ -68,8 +66,7 @@ public class FilmService {
         return filmStorage.findAll();
     }
 
-    public Film findFilmById(@Positive Long id) {
+    public Film findFilmById(Long id) {
         return filmStorage.findFilmById(id);
     }
-
 }

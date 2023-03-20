@@ -3,18 +3,17 @@ package ru.yandex.practicum.controller;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.context.annotation.Primary;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.model.Film;
 import ru.yandex.practicum.service.FilmService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @RestController
-@Primary
 @Validated
 @RequestMapping("/films")
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -44,16 +43,16 @@ public class FilmController {
 
     // PUT /films/{id}/like/{userId} — пользователь ставит лайк фильму.
     @PutMapping("{id}/like/{userId}")
-    public Film addLike(@PathVariable("id") Long filmId,
-                        @PathVariable("userId") Long userId) {
+    public Film addLike(@PathVariable("id") @Positive Long filmId,
+                        @PathVariable("userId") @Positive Long userId) {
         return filmService.addLike(filmId, userId);
     }
 
     // DELETE /films/{id}/like/{userId} — пользователь удаляет лайк.
     @DeleteMapping("{id}/like/{userId}")
     public Film removeLike(
-            @PathVariable("id") Long filmId,
-            @PathVariable("userId") Long userId) {
+            @PathVariable("id") @Positive Long filmId,
+            @PathVariable("userId") @Positive Long userId) {
         return filmService.removeLike(filmId, userId);
     }
 
