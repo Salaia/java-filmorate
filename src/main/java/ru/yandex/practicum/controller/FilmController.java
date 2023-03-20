@@ -52,7 +52,7 @@ public class FilmController {
     @DeleteMapping("{id}/like/{userId}")
     public Film removeLike(
             @PathVariable("id") @Positive Long filmId,
-            @PathVariable("userId") @Positive Long userId) {
+            @PathVariable("userId") Long userId) {
         return filmService.removeLike(filmId, userId);
     }
 
