@@ -1,16 +1,17 @@
 package ru.yandex.practicum.model;
 
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
 import ru.yandex.practicum.validator.IsAfterCinemaBirthday;
 
 import javax.validation.constraints.*;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Data
+@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Film {
 
@@ -29,6 +30,11 @@ public class Film {
 
     @Positive(message = "Film duration has to be positive!")
     int duration;
+
+    final LinkedHashSet<Genre> genres = new LinkedHashSet<>();
+
+    Mpa mpa;
+    int rate;
 
     final Set<Long> likes = new HashSet<>();
 }

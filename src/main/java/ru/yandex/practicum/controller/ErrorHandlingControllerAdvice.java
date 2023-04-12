@@ -2,12 +2,9 @@ package ru.yandex.practicum.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.exception.NotFoundException;
-import ru.yandex.practicum.exception.ValidationException;
+import ru.yandex.practicum.exception.ValidationExceptionForFilmorate;
 import ru.yandex.practicum.model.ErrorResponse;
 import ru.yandex.practicum.model.ValidationErrorResponse;
 import ru.yandex.practicum.model.Violation;
@@ -16,7 +13,7 @@ import javax.validation.ConstraintViolationException;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@ControllerAdvice
+@RestControllerAdvice(basePackages = "ru.yandex.practicum.controller")
 public class ErrorHandlingControllerAdvice {
 
     @ResponseBody
@@ -50,15 +47,13 @@ public class ErrorHandlingControllerAdvice {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleValidationException(final ValidationException exception) {
+    public ErrorResponse handleValidationException(final ValidationExceptionForFilmorate exception) {
         return new ErrorResponse(exception.getMessage());
     }
 
-    @ExceptionHandler
+    @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleNotFoundException(final NotFoundException exception) {
-        System.out.println("Handled NotFoundException");
         return new ErrorResponse(exception.getMessage());
     }
-
 }
