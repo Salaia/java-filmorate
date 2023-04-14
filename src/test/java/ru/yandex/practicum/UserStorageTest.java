@@ -1,4 +1,4 @@
-package ru.yandex.practicum.dao.impl;
+package ru.yandex.practicum;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,6 +16,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import ru.yandex.practicum.model.Film;
 import ru.yandex.practicum.model.Mpa;
 import ru.yandex.practicum.model.User;
+import ru.yandex.practicum.service.UserService;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -30,8 +31,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureTestDatabase
 @AutoConfigureMockMvc
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-class UserDaoImplTest {
-    private final UserDaoImpl userDao;
+class UserStorageTest {
+
+    private final UserService userService;
     private final MockMvc mockMvc;
     static final ObjectMapper objectMapper =
             new ObjectMapper().disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
@@ -143,7 +145,7 @@ class UserDaoImplTest {
         initCreateUserTiger();
         initMockPerformUsersTigerOk();
 
-        User testUser = userDao.findUserById(1L);
+        User testUser = userService.findUserById(1L);
 
         assertEquals(puma, testUser);
     }
@@ -230,7 +232,7 @@ class UserDaoImplTest {
                 .andExpect(status()
                         .isOk());
 
-        User testUser = userDao.findUserById(1L);
+        User testUser = userService.findUserById(1L);
         assertEquals(puma, testUser);
     }
 
@@ -252,7 +254,7 @@ class UserDaoImplTest {
     @Test
     @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
     public void findAllUsersEmptyListSuccess() {
-        assertEquals(new ArrayList<>(), userDao.findAll());
+        assertEquals(new ArrayList<>(), userService.findAll());
     }
 
     @Test
@@ -263,7 +265,7 @@ class UserDaoImplTest {
         puma.setId(1L);
         List<User> checkList = new ArrayList<>();
         checkList.add(puma);
-        assertEquals(checkList, userDao.findAll());
+        assertEquals(checkList, userService.findAll());
     }
 
     @Test
@@ -305,7 +307,7 @@ class UserDaoImplTest {
         initCreateUserPuma();
         initMockPerformUsersPumaOk();
         puma.setId(1L);
-        assertEquals(new ArrayList<>(), userDao.findFriends(1L));
+        assertEquals(new ArrayList<>(), userService.findFriends(1L));
     }
 
     @Test
@@ -321,12 +323,12 @@ class UserDaoImplTest {
         tiger.setId(2L);
         lion.setId(3L);
 
-        userDao.addFriend(1L, 2L);
-        userDao.addFriend(1L, 3L);
+        userService.addFriend(1L, 2L);
+        userService.addFriend(1L, 3L);
         List<User> checkList = new ArrayList<>();
         checkList.add(tiger);
         checkList.add(lion);
-        assertEquals(checkList, userDao.findFriends(1L));
+        assertEquals(checkList, userService.findFriends(1L));
     }
 
     @Test
@@ -342,16 +344,16 @@ class UserDaoImplTest {
         tiger.setId(2L);
         lion.setId(3L);
 
-        userDao.addFriend(1L, 2L);
-        userDao.addFriend(1L, 3L);
+        userService.addFriend(1L, 2L);
+        userService.addFriend(1L, 3L);
         List<User> checkList = new ArrayList<>();
         checkList.add(tiger);
         checkList.add(lion);
-        assertEquals(checkList, userDao.findFriends(1L));
+        assertEquals(checkList, userService.findFriends(1L));
 
-        userDao.removeFriend(1L, 3L);
+        userService.removeFriend(1L, 3L);
         checkList.remove(lion);
-        assertEquals(checkList, userDao.findFriends(1L));
+        assertEquals(checkList, userService.findFriends(1L));
     }
 
     @Test
@@ -367,18 +369,18 @@ class UserDaoImplTest {
         tiger.setId(2L);
         lion.setId(3L);
 
-        userDao.addFriend(1L, 2L);
-        userDao.addFriend(1L, 3L);
+        userService.addFriend(1L, 2L);
+        userService.addFriend(1L, 3L);
 
-        userDao.addFriend(2L, 1L);
-        userDao.addFriend(2L, 3L);
+        userService.addFriend(2L, 1L);
+        userService.addFriend(2L, 3L);
 
-        userDao.addFriend(3L, 2L);
-        userDao.addFriend(3L, 1L);
+        userService.addFriend(3L, 2L);
+        userService.addFriend(3L, 1L);
 
         List<User> checkList = new ArrayList<>();
         checkList.add(lion);
-        assertEquals(checkList, userDao.findCommonFriends(1L, 2L));
+        assertEquals(checkList, userService.findCommonFriends(1L, 2L));
     }
 
 }

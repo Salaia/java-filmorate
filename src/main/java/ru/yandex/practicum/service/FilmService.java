@@ -1,45 +1,51 @@
 package ru.yandex.practicum.service;
 
 import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.dao.FilmDao;
-import ru.yandex.practicum.dao.UserDao;
 import ru.yandex.practicum.exception.NotFoundException;
 import ru.yandex.practicum.model.Film;
+import ru.yandex.practicum.model.Genre;
+import ru.yandex.practicum.model.Mpa;
+import ru.yandex.practicum.storage.film.FilmStorage;
+import ru.yandex.practicum.storage.user.UserStorage;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-@RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class FilmService {
-    FilmDao filmDao;
-    UserDao userDao;
+    final FilmStorage filmStorage;
+    final UserStorage userStorage;
+
+    public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage, @Qualifier("userDbStorage") UserStorage userStorage) {
+        this.filmStorage = filmStorage;
+        this.userStorage = userStorage;
+    }
 
     public Film addLike(Long filmId, Long userId) {
-        userDao.checkUserExistence(userId);
-        filmDao.checkFilmExistence(filmId);
+        userStorage.checkUserExistence(userId);
+        filmStorage.checkFilmExistence(filmId);
 
-        filmDao.addLike(filmId, userId);
+        filmStorage.addLike(filmId, userId);
         log.info("Like was added to film " + filmId);
-        return filmDao.findFilmById(filmId);
+        return filmStorage.findFilmById(filmId);
     }
 
     public Film removeLike(Long filmId, Long userId) {
-        userDao.checkUserExistence(userId);
-        filmDao.checkFilmExistence(filmId);
-        filmDao.removeLike(filmId, userId);
+        userStorage.checkUserExistence(userId);
+        filmStorage.checkFilmExistence(filmId);
+        filmStorage.removeLike(filmId, userId);
         log.info("Like was removed from film " + filmId);
-        return filmDao.findFilmById(filmId);
+        return filmStorage.findFilmById(filmId);
     }
 
     public List<Film> findPopularFilms(Integer count) {
-        List<Film> films = filmDao.findAll();
+        List<Film> films = filmStorage.findAllFilms();
         if (films.isEmpty()) {
             String message = "No films in our DataBase yet.";
             log.debug(message);
@@ -53,20 +59,39 @@ public class FilmService {
 
     public Film create(Film film) {
         log.info("Film " + film.getName() + " was successfully saved!");
-        return filmDao.create(film);
+        return filmStorage.create(film);
     }
 
     public Film update(Film film) {
-        filmDao.checkFilmExistence(film.getId()); // NotFoundException
+        filmStorage.checkFilmExistence(film.getId()); // NotFoundException
         log.info("Film " + film.getName() + " was successfully updated!");
-        return filmDao.update(film);
+        return filmStorage.update(film);
     }
 
-    public List<Film> findAll() {
-        return filmDao.findAll();
+    public List<Film> findAllFilms() {
+        return filmStorage.findAllFilms();
     }
 
     public Film findFilmById(Long id) {
-        return filmDao.findFilmById(id);
+        filmStorage.checkFilmExistence(id);
+        return filmStorage.findFilmById(id);
+    }
+
+    public List<Genre> findAllGenres() {
+        return filmStorage.findAllGenres();
+    }
+
+    public Genre findGenreById(Long id) {
+        filmStorage.checkGenreExistence(id);
+        return filmStorage.findGenreById(id);
+    }
+
+    public List<Mpa> findAllMpa() {
+        return filmStorage.findAllMpa();
+    }
+
+    public Mpa findMpaById(Long id) {
+        filmStorage.checkMpaExistence(id);
+        return filmStorage.findMpaById(id);
     }
 }

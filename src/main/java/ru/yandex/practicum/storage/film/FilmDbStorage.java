@@ -1,28 +1,33 @@
-package ru.yandex.practicum.dao.impl;
+package ru.yandex.practicum.storage.film;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.dao.FilmDao;
 import ru.yandex.practicum.exception.NotFoundException;
 import ru.yandex.practicum.exception.ValidationExceptionForFilmorate;
-import ru.yandex.practicum.model.*;
+import ru.yandex.practicum.model.Film;
+import ru.yandex.practicum.model.Genre;
+import ru.yandex.practicum.model.Mpa;
 
 import java.io.IOException;
-import java.sql.*;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
-@Component
-public class FilmDaoImpl implements FilmDao {
-
+@Component("filmDbStorage")
+@Qualifier("filmDbStorage")
+@RequiredArgsConstructor
+public class FilmDbStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
-
-    public FilmDaoImpl(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
 
     @Override
     public Film create(Film film) throws ValidationExceptionForFilmorate {
@@ -103,7 +108,7 @@ public class FilmDaoImpl implements FilmDao {
     }
 
     @Override
-    public List<Film> findAll() {
+    public List<Film> findAllFilms() {
 
         final String sql = "select f.film_id, f.name as film_name, f.description, f.release_date, f.duration, " +
                 "m.mpa_rating_id, m.name as mpa_name, json_arrayagg(json_object(" +
@@ -118,7 +123,12 @@ public class FilmDaoImpl implements FilmDao {
                 "left join filmorate.likes_films_users_link as lk on lk.film_id = f.film_id " +
                 "group by f.film_id ";
 
-        return jdbcTemplate.query(sql, this::mapRowToFilm);
+        List<Optional<Film>> queryResult = jdbcTemplate.query(sql, this::mapRowToFilm);
+        List<Film> films = new ArrayList<>();
+        for (Optional<Film> optionalFilm : queryResult) {
+            optionalFilm.ifPresent(films::add);
+        }
+        return films;
     }
 
     @Override
@@ -139,12 +149,12 @@ public class FilmDaoImpl implements FilmDao {
                 "where f.film_id = ? " +
                 "group by f.film_id ";
 
-        final List<Film> films = jdbcTemplate.query(sql, this::mapRowToFilm, id);
+        Optional<Film> optionalFilm = jdbcTemplate.queryForObject(sql, this::mapRowToFilm, id);
 
-        if (films.size() == 0) {
+        if (optionalFilm.isEmpty()) {
             throw new NotFoundException("Film not found.");
         } else {
-            return films.get(0);
+            return optionalFilm.get();
         }
     }
 
@@ -163,6 +173,7 @@ public class FilmDaoImpl implements FilmDao {
         return film;
     }
 
+    @Override
     public Film removeLike(Long filmId, Long userId) {
         final String sql = "delete from filmorate.likes_films_users_link " +
                 "where film_id = ? and user_id = ?";
@@ -175,16 +186,79 @@ public class FilmDaoImpl implements FilmDao {
 
     @Override
     public void checkFilmExistence(Long id) {
-        final String sql = "select f.film_id, " +
+        final String sql = "select COUNT(f.film_id), " +
                 "from filmorate.films as f " +
                 "where f.film_id = ? ";
-        final List<Film> films = jdbcTemplate.query(sql, this::mapFilmId, id);
-        if (films.isEmpty()) {
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
+        if (count == null || count == 0) {
             throw new NotFoundException("Film with id \"" + id + "\" not found.");
         }
     }
 
-    private Film mapRowToFilm(ResultSet resultSet, int rowNum) throws SQLException {
+    @Override
+    public List<Genre> findAllGenres() {
+        String sql = "select * from filmorate.genre";
+        List<Optional<Genre>> queryResult = jdbcTemplate.query(sql, this::mapRowToGenre);
+        List<Genre> genreList = new ArrayList<>();
+        for (Optional<Genre> optionalGenre : queryResult) {
+            optionalGenre.ifPresent(genreList::add);
+        }
+        return genreList;
+    }
+
+    @Override
+    public Genre findGenreById(Long id) {
+        final String sql = "select * from filmorate.genre where genre_id = ?";
+        Optional<Genre> genre = jdbcTemplate.queryForObject(sql, this::mapRowToGenre, id);
+        if (genre.isEmpty()) {
+            throw new NotFoundException("Genre not found.");
+
+        } else return genre.get();
+    }
+
+    @Override
+    public void checkGenreExistence(Long id) {
+        final String sql = "select COUNT(g.genre_id), " +
+                "from filmorate.genre as g " +
+                "where g.genre_id = ? ";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
+        if (count == null || count == 0) {
+            throw new NotFoundException("Genre with id \"" + id + "\" not found.");
+        }
+    }
+
+    @Override
+    public List<Mpa> findAllMpa() {
+        String sql = "select * from filmorate.mpa_rating";
+        List<Optional<Mpa>> optionalList = jdbcTemplate.query(sql, this::mapRowToMpa);
+        List<Mpa> mpaList = new ArrayList<>();
+        for (Optional<Mpa> optionalMpa : optionalList) {
+            optionalMpa.ifPresent(mpaList::add);
+        }
+        return mpaList;
+    }
+
+    @Override
+    public Mpa findMpaById(Long id) {
+        final String sql = "select * from filmorate.mpa_rating where mpa_rating_id = ?";
+        Optional<Mpa> mpa = jdbcTemplate.queryForObject(sql, this::mapRowToMpa, id);
+        if (mpa.isEmpty()) {
+            throw new NotFoundException("Mpa not found.");
+        } else return mpa.get();
+    }
+
+    @Override
+    public void checkMpaExistence(Long id) {
+        final String sql = "select COUNT(mpa.mpa_rating_id), " +
+                "from filmorate.mpa_rating as mpa " +
+                "where mpa.mpa_rating_id = ? ";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
+        if (count == null || count == 0) {
+            throw new NotFoundException("Mpa with id \"" + id + "\" not found.");
+        }
+    }
+
+    private Optional<Film> mapRowToFilm(ResultSet resultSet, int rowNum) throws SQLException {
         Film film = Film.builder()
                 .id(resultSet.getLong("film_id"))
                 .name(resultSet.getString("film_name"))
@@ -195,7 +269,6 @@ public class FilmDaoImpl implements FilmDao {
                         resultSet.getString("mpa_name")))
                 .rate(resultSet.getInt("rate"))
                 .build();
-
 
         String genresString = resultSet.getString("genres");
 
@@ -212,12 +285,23 @@ public class FilmDaoImpl implements FilmDao {
                     film.getGenres().add(genre);
             }
         }
-        return film;
+        return Optional.of(film);
     }
 
-    private Film mapFilmId(ResultSet resultSet, int rowNum) throws SQLException {
-        return Film.builder()
-                .id(resultSet.getLong("film_id"))
+    private Optional<Genre> mapRowToGenre(ResultSet resultSet, int rowNum) throws SQLException {
+        Genre genre = Genre.builder()
+                .id(resultSet.getLong("genre_id"))
+                .name(resultSet.getString("name"))
                 .build();
+        return Optional.of(genre);
     }
+
+    private Optional<Mpa> mapRowToMpa(ResultSet resultSet, int rowNum) throws SQLException {
+        Mpa mpa = Mpa.builder()
+                .id(resultSet.getLong("mpa_rating_id"))
+                .name(resultSet.getString("name"))
+                .build();
+        return Optional.of(mpa);
+    }
+
 }

@@ -25,7 +25,7 @@ public class Film {
     @Size(max = 200, message = "Film description max length is 200 symbols.")
     String description;
 
-    @IsAfterCinemaBirthday(message = "Release date may not be before 1895, December, 28th.")
+    @IsAfterCinemaBirthday
     LocalDate releaseDate;
 
     @Positive(message = "Film duration has to be positive!")
