@@ -14,7 +14,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.yandex.practicum.model.Film;
-import ru.yandex.practicum.model.Genre;
 import ru.yandex.practicum.model.Mpa;
 import ru.yandex.practicum.model.User;
 import ru.yandex.practicum.service.FilmService;
@@ -22,7 +21,6 @@ import ru.yandex.practicum.service.FilmService;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.ArrayList;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
