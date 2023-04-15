@@ -7,8 +7,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.exception.NotFoundException;
 import ru.yandex.practicum.model.Film;
-import ru.yandex.practicum.model.Genre;
-import ru.yandex.practicum.model.Mpa;
 import ru.yandex.practicum.storage.film.FilmStorage;
 import ru.yandex.practicum.storage.user.UserStorage;
 
@@ -75,23 +73,5 @@ public class FilmService {
     public Film findFilmById(Long id) {
         filmStorage.checkFilmExistence(id);
         return filmStorage.findFilmById(id);
-    }
-
-    public List<Genre> findAllGenres() {
-        return filmStorage.findAllGenres();
-    }
-
-    public Genre findGenreById(Long id) {
-        filmStorage.checkGenreExistence(id);
-        return filmStorage.findGenreById(id);
-    }
-
-    public List<Mpa> findAllMpa() {
-        return filmStorage.findAllMpa();
-    }
-
-    public Mpa findMpaById(Long id) {
-        filmStorage.checkMpaExistence(id);
-        return filmStorage.findMpaById(id);
     }
 }

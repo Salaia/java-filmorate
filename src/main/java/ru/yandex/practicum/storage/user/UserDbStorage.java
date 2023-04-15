@@ -1,7 +1,6 @@
 package ru.yandex.practicum.storage.user;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -14,13 +13,10 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 @Component("userDbStorage")
-@Qualifier("userDbStorage")
 @RequiredArgsConstructor
 public class UserDbStorage implements UserStorage {
     private final JdbcTemplate jdbcTemplate;
@@ -59,25 +55,14 @@ public class UserDbStorage implements UserStorage {
     @Override
     public List<User> findAll() {
         String sql = "select * from filmorate.users";
-        List<Optional<User>> queryResult = jdbcTemplate.query(sql, this::mapRowToUser);
-        List<User> users = new ArrayList<>();
-        for (Optional<User> optionalUser : queryResult) {
-            optionalUser.ifPresent(users::add);
-        }
-        return users;
+        return jdbcTemplate.query(sql, this::mapRowToUser);
     }
 
     @Override
     public User findUserById(Long id) {
 
         final String sql = "select * from filmorate.users where USER_ID = ?";
-        Optional<User> optionalUser = jdbcTemplate.queryForObject(sql, this::mapRowToUser, id);
-
-        if (optionalUser.isEmpty()) {
-            throw new NotFoundException("User not found.");
-        } else {
-            return optionalUser.get();
-        }
+        return jdbcTemplate.queryForObject(sql, this::mapRowToUser, id);
     }
 
     public void addFriend(Long userId, Long friendId) {
@@ -100,12 +85,7 @@ public class UserDbStorage implements UserStorage {
                 "from filmorate.friendship_user_to_user_link as f " +
                 "where f.user_id = ?);";
 
-        List<Optional<User>> queryResult = jdbcTemplate.query(sql, this::mapRowToUser, userId);
-        List<User> users = new ArrayList<>();
-        for (Optional<User> optionalUser : queryResult) {
-            optionalUser.ifPresent(users::add);
-        }
-        return users;
+        return jdbcTemplate.query(sql, this::mapRowToUser, userId);
     }
 
     public List<User> findCommonFriends(Long userId, Long otherUserId) {
@@ -118,12 +98,7 @@ public class UserDbStorage implements UserStorage {
                 "from filmorate.friendship_user_to_user_link as f1 " +
                 "where f1.user_id = ? ));";
 
-        List<Optional<User>> queryResult = jdbcTemplate.query(sql, this::mapRowToUser, userId, otherUserId);
-        List<User> users = new ArrayList<>();
-        for (Optional<User> optionalUser : queryResult) {
-            optionalUser.ifPresent(users::add);
-        }
-        return users;
+        return jdbcTemplate.query(sql, this::mapRowToUser, userId, otherUserId);
     }
 
     public User removeFriend(Long userId, Long friendId) {
@@ -142,14 +117,13 @@ public class UserDbStorage implements UserStorage {
         }
     }
 
-    private Optional<User> mapRowToUser(ResultSet resultSet, int rowNum) throws SQLException {
-        User user = User.builder()
+    private User mapRowToUser(ResultSet resultSet, int rowNum) throws SQLException {
+        return User.builder()
                 .id(resultSet.getLong("USER_ID"))
                 .email(resultSet.getString("email"))
                 .login(resultSet.getString("login"))
                 .name(resultSet.getString("name"))
                 .birthday(resultSet.getDate("birthday").toLocalDate())
                 .build();
-        return Optional.of(user);
     }
 }

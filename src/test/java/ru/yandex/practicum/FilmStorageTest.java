@@ -40,8 +40,6 @@ class FilmStorageTest {
             new ObjectMapper().disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
     static User userOne;
     static Film potterOne;
-    static List<Genre> genreList = new ArrayList<>();
-    static List<Mpa> mpaList = new ArrayList<>();
 
     public static String asJsonString(final Object obj) {
         objectMapper.registerModule(new JavaTimeModule());
@@ -89,23 +87,6 @@ class FilmStorageTest {
                         .content(asJsonString(userOne)))
                 .andExpect(status()
                         .isOk());
-    }
-
-    public void fillInGenreList() {
-        genreList.add(new Genre(1L, "Комедия"));
-        genreList.add(new Genre(2L, "Драма"));
-        genreList.add(new Genre(3L, "Мультфильм"));
-        genreList.add(new Genre(4L, "Триллер"));
-        genreList.add(new Genre(5L, "Документальный"));
-        genreList.add(new Genre(6L, "Боевик"));
-    }
-
-    public void fillInMpaList() {
-        mpaList.add(new Mpa(1L, "G"));
-        mpaList.add(new Mpa(2L, "PG"));
-        mpaList.add(new Mpa(3L, "PG-13"));
-        mpaList.add(new Mpa(4L, "R"));
-        mpaList.add(new Mpa(5L, "NC-17"));
     }
 
     @Test
@@ -578,65 +559,5 @@ class FilmStorageTest {
                         .content(asJsonString(null)))
                 .andExpect(status()
                         .isBadRequest());
-    }
-
-    @Test
-    @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-    public void findGenreByIdSuccess() throws Exception {
-        Genre comedy = Genre.builder()
-                .id(1L)
-                .name("Комедия")
-                .build();
-
-        Genre testGenre = filmService.findGenreById(1L);
-        assertEquals(comedy, testGenre);
-    }
-
-    @Test
-    @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-    public void failFindGenreByWrongId() throws Exception {
-        mockMvc
-                .perform(get("/genres/10")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(null)))
-                .andExpect(status()
-                        .isNotFound());
-    }
-
-    @Test
-    @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-    public void findAllGenresSuccess() {
-        fillInGenreList();
-        assertEquals(genreList, filmService.findAllGenres());
-    }
-
-    @Test
-    @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-    public void findMpaByIdSuccess() throws Exception {
-        Mpa mpaG = Mpa.builder()
-                .id(1L)
-                .name("G")
-                .build();
-
-        Mpa testMpa = filmService.findMpaById(1L);
-        assertEquals(mpaG, testMpa);
-    }
-
-    @Test
-    @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-    public void failFindMpaByWrongId() throws Exception {
-        mockMvc
-                .perform(get("/mpa/10")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(asJsonString(null)))
-                .andExpect(status()
-                        .isNotFound());
-    }
-
-    @Test
-    @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-    public void findAllMpaSuccess() {
-        fillInMpaList();
-        assertEquals(mpaList, filmService.findAllMpa());
     }
 }
