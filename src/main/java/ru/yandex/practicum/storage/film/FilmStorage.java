@@ -9,7 +9,14 @@ public interface FilmStorage {
 
     Film update(Film film);
 
-    List<Film> findAll();
+    List<Film> findAllFilms();
 
     Film findFilmById(Long id);
+
+    Film addLike(Long filmId, Long userId);
+
+    Film removeLike(Long filmId, Long userId);
+
+    void checkFilmExistence(Long id);
+
 }

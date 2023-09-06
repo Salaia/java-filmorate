@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Component
+@Component("InMemoryUserStorage")
 @Slf4j
 public class InMemoryUserStorage implements UserStorage {
     final Map<Long, User> users = new HashMap<>();
@@ -20,13 +20,13 @@ public class InMemoryUserStorage implements UserStorage {
     public User create(User user) {
         user.setId(generateId());
         users.put(user.getId(), user);
-        return user;
+        return users.get(user.getId());
     }
 
     @Override
     public User update(User user) {
         users.replace(user.getId(), user);
-        return user;
+        return users.get(user.getId());
     }
 
     @Override
@@ -41,6 +41,24 @@ public class InMemoryUserStorage implements UserStorage {
             log.debug(message);
             throw new NotFoundException(message);
         } else return users.get(id);
+    }
+
+    public void addFriend(Long userId, Long friendId) {
+    }
+
+    public List<User> findFriends(Long userId) {
+        return null;
+    }
+
+    public List<User> findCommonFriends(Long userId, Long otherUserId) {
+        return null;
+    }
+
+    public User removeFriend(Long userId, Long friendId) {
+        return null;
+    }
+
+    public void checkUserExistence(Long id) {
     }
 
     private Long generateId() {

@@ -15,9 +15,9 @@ import java.util.List;
 
 @RestController
 @Validated
-@RequestMapping("/films")
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
+@RequestMapping("/films")
 public class FilmController {
     FilmService filmService;
 
@@ -32,8 +32,8 @@ public class FilmController {
     }
 
     @GetMapping // GET /films
-    public List<Film> findAll() {
-        return filmService.findAll();
+    public List<Film> findAllFilms() {
+        return filmService.findAllFilms();
     }
 
     @GetMapping("/{id}") // GET /films/{id}
@@ -42,14 +42,14 @@ public class FilmController {
     }
 
     // PUT /films/{id}/like/{userId} — пользователь ставит лайк фильму.
-    @PutMapping("{id}/like/{userId}")
+    @PutMapping("/{id}/like/{userId}")
     public Film addLike(@PathVariable("id") @Positive Long filmId,
                         @PathVariable("userId") @Positive Long userId) {
         return filmService.addLike(filmId, userId);
     }
 
     // DELETE /films/{id}/like/{userId} — пользователь удаляет лайк.
-    @DeleteMapping("{id}/like/{userId}")
+    @DeleteMapping("/{id}/like/{userId}")
     public Film removeLike(
             @PathVariable("id") @Positive Long filmId,
             @PathVariable("userId") Long userId) {

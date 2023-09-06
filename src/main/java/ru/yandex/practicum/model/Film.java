@@ -1,16 +1,17 @@
 package ru.yandex.practicum.model;
 
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
 import ru.yandex.practicum.validator.IsAfterCinemaBirthday;
 
 import javax.validation.constraints.*;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Data
+@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Film {
 
@@ -24,11 +25,16 @@ public class Film {
     @Size(max = 200, message = "Film description max length is 200 symbols.")
     String description;
 
-    @IsAfterCinemaBirthday(message = "Release date may not be before 1895, December, 28th.")
+    @IsAfterCinemaBirthday
     LocalDate releaseDate;
 
     @Positive(message = "Film duration has to be positive!")
     int duration;
+
+    final LinkedHashSet<Genre> genres = new LinkedHashSet<>();
+
+    Mpa mpa;
+    int rate;
 
     final Set<Long> likes = new HashSet<>();
 }
