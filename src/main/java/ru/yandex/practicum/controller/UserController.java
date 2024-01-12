@@ -20,44 +20,43 @@ import java.util.*;
 public class UserController {
     UserService userService;
 
-    @PostMapping // POST /users
+    @PostMapping
     public User create(@Valid @RequestBody User user) {
         return userService.create(user);
     }
 
-    @PutMapping // PUT /users
+    @PutMapping
     public User update(@Valid @RequestBody User user) {
         return userService.update(user);
     }
 
-    @GetMapping // GET /users
+    @GetMapping
     public List<User> findAll() {
         return userService.findAll();
     }
 
-    @GetMapping("/{id}") // GET /users/{id}
+    @GetMapping("/{id}")
     public User findUserById(@PathVariable("id") @Positive Long id) {
         return userService.findUserById(id);
     }
 
-    @PutMapping("/{id}/friends/{friendId}") // PUT /users/{id}/friends/{friendId} — добавление в друзья.
+    @PutMapping("/{id}/friends/{friendId}")
     public User addFriend(@PathVariable("id") @Positive Long userId,
                           @PathVariable("friendId") Long friendId) {
         return userService.addFriend(userId, friendId);
     }
 
-    @DeleteMapping("/{id}/friends/{friendId}") // DELETE /users/{id}/friends/{friendId} — удаление из друзей.
+    @DeleteMapping("/{id}/friends/{friendId}")
     public User removeFriend(@PathVariable("id") @Positive Long userId,
                              @PathVariable("friendId") Long friendId) {
         return userService.removeFriend(userId, friendId);
     }
 
-    @GetMapping("{id}/friends") // GET /users/{id}/friends — возвращаем список пользователей, являющихся его друзьями.
+    @GetMapping("{id}/friends")
     public List<User> findFriends(@PathVariable("id") @Positive Long userId) {
         return userService.findFriends(userId);
     }
 
-    // GET /users/{id}/friends/common/{otherId} — список друзей, общих с другим пользователем.
     @GetMapping("{id}/friends/common/{otherId}")
     public List<User> findCommonFriends(@PathVariable("id") @Positive Long userId,
                                         @PathVariable("otherId") @Positive Long otherUserId) {

@@ -21,34 +21,32 @@ import java.util.List;
 public class FilmController {
     FilmService filmService;
 
-    @PostMapping // POST /films
+    @PostMapping
     public Film create(@Valid @RequestBody Film film) {
         return filmService.create(film);
     }
 
-    @PutMapping // PUT /films
+    @PutMapping
     public Film update(@Valid @RequestBody Film film) {
         return filmService.update(film);
     }
 
-    @GetMapping // GET /films
+    @GetMapping
     public List<Film> findAllFilms() {
         return filmService.findAllFilms();
     }
 
-    @GetMapping("/{id}") // GET /films/{id}
+    @GetMapping("/{id}")
     public Film findFilmById(@PathVariable("id") Long id) {
         return filmService.findFilmById(id);
     }
 
-    // PUT /films/{id}/like/{userId} — пользователь ставит лайк фильму.
     @PutMapping("/{id}/like/{userId}")
     public Film addLike(@PathVariable("id") @Positive Long filmId,
                         @PathVariable("userId") @Positive Long userId) {
         return filmService.addLike(filmId, userId);
     }
 
-    // DELETE /films/{id}/like/{userId} — пользователь удаляет лайк.
     @DeleteMapping("/{id}/like/{userId}")
     public Film removeLike(
             @PathVariable("id") @Positive Long filmId,
@@ -56,7 +54,6 @@ public class FilmController {
         return filmService.removeLike(filmId, userId);
     }
 
-    // GET /films/popular?count={count}
     @GetMapping("/popular")
     public List<Film> findPopularFilms(
             @RequestParam(defaultValue = "10", required = false) @PositiveOrZero Integer count) {

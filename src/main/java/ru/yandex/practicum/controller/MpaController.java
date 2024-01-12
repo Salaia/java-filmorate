@@ -22,12 +22,12 @@ import java.util.List;
 public class MpaController {
     private final MpaService mpaService;
 
-    @GetMapping // GET /mpa
+    @GetMapping
     public List<Mpa> findAll() {
         return mpaService.findAll();
     }
 
-    @GetMapping("/{id}") // GET /mpa/{id}
+    @GetMapping("/{id}")
     public Mpa findMpaById(@PathVariable("id") @Positive Long id) {
         return mpaService.findMpaById(id);
     }
