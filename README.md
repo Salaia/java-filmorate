@@ -63,6 +63,7 @@
     <img src="https://github.com/Salaia/icons/blob/main/green/JDBC.png?raw=true" title="JDBC" alt="JDBC" height="40"/>
 <img src="https://github.com/Salaia/icons/blob/main/green/H2.png?raw=true" title="H2" alt="H2" height="40"/>
 <img src="https://github.com/Salaia/icons/blob/main/green/JUnit%205.png?raw=true" title="JUnit 5" alt="JUnit 5" height="40"/>
+<img src="https://github.com/Salaia/icons/blob/main/green/Postman.png?raw=true" title="Postman" alt="Postman" height="40"/>
 </div>
 
 
